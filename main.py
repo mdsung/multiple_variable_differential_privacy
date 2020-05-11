@@ -22,7 +22,7 @@ def get_arguments():
     return epsilon, filename
 
 def read_file(filename, id = False):
-    return pd.read_csv(filename)[:100]
+    return pd.read_csv(filename)
 
 def create_folder(directory):
     if not os.path.exists(directory):

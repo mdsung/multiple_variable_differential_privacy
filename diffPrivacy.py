@@ -114,7 +114,6 @@ class diffPrivacy:
                     0:bernoulli.rvs(size=1, p=oue_q).astype(np.uint8)[0],
                     }
         rst = [perturbation[a] for a in arr]
-        print(rst)
         return rst
 
     # Preprocessing
