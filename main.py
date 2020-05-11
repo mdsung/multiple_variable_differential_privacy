@@ -1,3 +1,4 @@
+import os
 import timeit
 import argparse
 
@@ -21,7 +22,7 @@ def get_arguments():
     return epsilon, filename
 
 def read_file(filename, id = False):
-    return pd.read_csv(filename)
+    return pd.read_csv(filename)[:100]
 
 def create_folder(directory):
     if not os.path.exists(directory):
@@ -34,15 +35,15 @@ def make_write_filename(read_filename, flag, epsilon):
 def write_file(df, filename):
     df.to_csv(filename)
 
-def write_outcomes(filename, epsilon):
+def write_outcomes(filename, epsilon, dp):
     output_path = "./outcome/"
     create_folder(output_path)
 
     write_filename = make_write_filename(filename, "norm", epsilon)
-    write_file(dp.normdf, output_path + write_filename)
+    write_file(dp.new_df, output_path + write_filename)
     
     write_filename = make_write_filename(filename, "DP", epsilon)
-    write_file(dp.newdf, output_path + write_filename)
+    write_file(dp.new_unnorm_df, output_path + write_filename)
 
 if __name__ == "__main__":
     
@@ -54,9 +55,10 @@ if __name__ == "__main__":
     raw_data = read_file(filename, False) ## matrix 반환
     ## Apply Differential Privacy
     dp = diffPrivacy(epsilon, raw_data, method) ## epsilon, matrix, method
-    
+    print(dp.df.iloc[:10,:5])
+    print(dp.new_unnorm_df.iloc[:10,:5])
     # Output file save
-    write_outcomes(filename)
+    write_outcomes(filename, epsilon, dp)
 
     # 실행 코드
     stop = timeit.default_timer()

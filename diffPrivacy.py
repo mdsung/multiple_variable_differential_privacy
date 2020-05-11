@@ -12,9 +12,10 @@ class diffPrivacy:
         self.check_df_variable_uniqueness(df)
         self.dimension = self.df.shape[1]
         self.user = self.df.shape[0] 
-        
         self.make_norm_df()
         self.get_map_df_to_normdf()
+        
+        self.process()
             
     def check_df_variable_uniqueness(self, df):
         lst = []
@@ -26,8 +27,9 @@ class diffPrivacy:
         
     def make_norm_df(self):
         self.min_max_scaler = MinMaxScaler()
-        self.continuous_columns = self.df.describe().columns 
+        self.continuous_columns = self.df.describe().columns.to_list()
         self.categorical_columns = list(set(self.df.columns) - set(self.df.describe().columns))
+
         df_cat = self.categorical_to_onehot(self.df.filter(self.categorical_columns))
         self.df_cat_columns = df_cat.columns
 
@@ -38,12 +40,10 @@ class diffPrivacy:
         self.normdf = pd.concat([df_con, df_cat], axis = 1) 
 
     def get_map_df_to_normdf(self):
-        self.map_df_to_normdf = {}
-        for i, column in enumerate(self.df.columns):
-            out = [normdf_column_name for normdf_column_name in self.normdf.columns if column in normdf_column_name]
-            out = [self.normdf.columns.get_loc(o) for o in out]
-            self.map_df_to_normdf[i] = out
-
+        self.map_df_to_normdf = {}         ## {0: [0], 1: [1], 2: [2], 3: [3], 4: [4, 5], 5: [6, 7], 6: [8], 7: [9, 10, 11, 12, 13, 14, 15, 16], 8: [17], 9: [18, 19]}
+        for i, entity in enumerate(self.continuous_columns + self.categorical_columns):
+            self.map_df_to_normdf[i] = [idx for idx,  col in enumerate(self.normdf.columns.to_list()) if entity in col]
+        
     def process(self):
         self.k = int(max([1,min([self.dimension, np.floor(self.epsilon/2.5)])]))
         self.find_position_to_dp()
@@ -70,7 +70,6 @@ class diffPrivacy:
         l = (C+1)/2 * value - (C-1)/2
         r = l + C - 1
         x_threshold = np.exp(epsilon /2) / (np.exp(epsilon/2) + 1)
-        
         if x < x_threshold:
             return (np.random.rand() * (r-l) + l)
         elif x >= x_threshold: 
@@ -114,7 +113,8 @@ class diffPrivacy:
                     1:bernoulli.rvs(size=1, p=oue_p).astype(np.uint8)[0],
                     0:bernoulli.rvs(size=1, p=oue_q).astype(np.uint8)[0],
                     }
-        return [perturbation[a] for a in arr]
+        rst = [perturbation[a] for a in arr]
+        return rst
 
     # Preprocessing
     def continuous_to_normalization(self, df_con):
@@ -145,17 +145,20 @@ class diffPrivacy:
 
         for column_index in c:
             target_column = self.map_df_to_normdf[column_index]
+     
             if len(target_column) == 1:
                 if ~np.isnan(self.new_matrix[r, target_column[0]]):
                     self.new_matrix[r, target_column[0]] = continuous_func(self.new_matrix[r, target_column[0]])
             else:
                 category_value_list = [self.new_matrix[r, target_c] for target_c in target_column]
-                result_list = self.OUF(category_value_list)
+                result_list = categorical_func(category_value_list)
+                print(result_list)
                 for i, value in enumerate(result_list):
                     self.new_matrix[r, target_column[0] + i] = value
 
     def make_dp_df(self):
         for r, c in enumerate(self.position):
+            print(r, c)
             self.calculate_each_row(r, c)
         
     def make_unnorm_dp_df(self):
