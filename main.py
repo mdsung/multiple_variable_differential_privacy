@@ -1,29 +1,64 @@
 import timeit
-import access
+import argparse
+
+import pandas as pd 
+
 from diffPrivacy import diffPrivacy
 
+def get_arguments():
+    parser = argparse.ArgumentParser(description='Argparse in DP_algorithms')
+    parser.add_argument('--file', '-f', 
+                    type=str, 
+                    required = True, 
+                    help='csv file for apply DP_algorithm')
+    
+    parser.add_argument('--epsilon', '-e', type=int, 
+                    help='Epsilon for DP',
+                    default = 10)
+    
+    args = parser.parse_args()
+    epsilon, filename = args.epsilon, args.file
+    return epsilon, filename
+
+def read_file(filename, id = False):
+    return pd.read_csv(filename)
+
+def create_folder(directory):
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+def make_write_filename(read_filename, flag, epsilon):
+    point_idx = read_filename.index(".")
+    return f"{read_filename[:point_idx]}_{flag}_{epsilon}.csv"
+
+def write_file(df, filename):
+    df.to_csv(filename)
+
+def write_outcomes(filename, epsilon):
+    output_path = "./outcome/"
+    create_folder(output_path)
+
+    write_filename = make_write_filename(filename, "norm", epsilon)
+    write_file(dp.normdf, output_path + write_filename)
+    
+    write_filename = make_write_filename(filename, "DP", epsilon)
+    write_file(dp.newdf, output_path + write_filename)
 
 if __name__ == "__main__":
+    
     start = timeit.default_timer()
-    epsilon = 5
-    method = "HM"
+    
+    epsilon, filename = get_arguments()
+    method = "PM"
 
-    # read_filename, method = args_parser()
-    data_path = "./data/"
-    read_filename = "targetfile.csv"
-    raw_data = access.read_file(data_path + read_filename, False) ## matrix 반환
+    raw_data = read_file(filename, False) ## matrix 반환
     ## Apply Differential Privacy
     dp = diffPrivacy(epsilon, raw_data, method) ## epsilon, matrix, method
     
     # Output file save
-    output_path = "./outcome/"
-    write_filename = access.make_write_filename(read_filename, "norm", epsilon)
-    access.write_file(dp.normdf, output_path + write_filename)
-    
-    write_filename = access.make_write_filename(read_filename, "DP", epsilon)
-    access.write_file(dp.newdf, output_path + write_filename)
+    write_outcomes(filename)
 
     # 실행 코드
-
     stop = timeit.default_timer()
+
     print(f"Total Time the algorithm spent:{stop - start}s")
