@@ -44,10 +44,6 @@ class diffPrivacy:
         for i, entity in enumerate(self.continuous_columns + self.categorical_columns):
             self.map_df_to_normdf[i] = [idx for idx,  col in enumerate(self.normdf.columns.to_list()) if entity in col]
 
-        print(self.normdf.columns)
-        print(self.continuous_columns + self.categorical_columns)
-        print(self.map_df_to_normdf)
-
     def process(self):
         self.k = int(max([1,min([self.dimension, np.floor(self.epsilon/2.5)])]))
         self.find_position_to_dp()
@@ -156,7 +152,7 @@ class diffPrivacy:
             if column_name in self.continuous_columns:
                 if ~np.isnan(self.new_matrix[r, target_column[0]]):
                     self.new_matrix[r, target_column[0]] = continuous_func(self.new_matrix[r, target_column[0]])
-                    
+
             elif column_name in self.categorical_columns:
                 category_value_list = [self.new_matrix[r, target_c] for target_c in target_column]
                 result_list = categorical_func(category_value_list)

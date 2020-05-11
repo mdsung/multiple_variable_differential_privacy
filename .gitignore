@@ -2,3 +2,4 @@
 /.vscode
 /outcome
 targetfile.csv
+.DS_Store
