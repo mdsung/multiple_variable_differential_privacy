@@ -55,8 +55,8 @@ if __name__ == "__main__":
     raw_data = read_file(filename, False) ## matrix 반환
     ## Apply Differential Privacy
     dp = diffPrivacy(epsilon, raw_data, method) ## epsilon, matrix, method
-    print(dp.df.iloc[:10,:5])
-    print(dp.new_unnorm_df.iloc[:10,:5])
+    print(dp.df.iloc[:10,5:10])
+    print(dp.new_unnorm_df.iloc[:10,5:10])
     # Output file save
     write_outcomes(filename, epsilon, dp)
 

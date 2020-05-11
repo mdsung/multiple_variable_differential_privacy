@@ -43,7 +43,11 @@ class diffPrivacy:
         self.map_df_to_normdf = {}         ## {0: [0], 1: [1], 2: [2], 3: [3], 4: [4, 5], 5: [6, 7], 6: [8], 7: [9, 10, 11, 12, 13, 14, 15, 16], 8: [17], 9: [18, 19]}
         for i, entity in enumerate(self.continuous_columns + self.categorical_columns):
             self.map_df_to_normdf[i] = [idx for idx,  col in enumerate(self.normdf.columns.to_list()) if entity in col]
-        
+
+        print(self.normdf.columns)
+        print(self.continuous_columns + self.categorical_columns)
+        print(self.map_df_to_normdf)
+
     def process(self):
         self.k = int(max([1,min([self.dimension, np.floor(self.epsilon/2.5)])]))
         self.find_position_to_dp()
@@ -114,6 +118,7 @@ class diffPrivacy:
                     0:bernoulli.rvs(size=1, p=oue_q).astype(np.uint8)[0],
                     }
         rst = [perturbation[a] for a in arr]
+        print(rst)
         return rst
 
     # Preprocessing
@@ -145,20 +150,21 @@ class diffPrivacy:
 
         for column_index in c:
             target_column = self.map_df_to_normdf[column_index]
-     
-            if len(target_column) == 1:
+            columns = self.continuous_columns + self.categorical_columns 
+            column_name = columns[column_index]
+            
+            if column_name in self.continuous_columns:
                 if ~np.isnan(self.new_matrix[r, target_column[0]]):
                     self.new_matrix[r, target_column[0]] = continuous_func(self.new_matrix[r, target_column[0]])
-            else:
+                    
+            elif column_name in self.categorical_columns:
                 category_value_list = [self.new_matrix[r, target_c] for target_c in target_column]
                 result_list = categorical_func(category_value_list)
-                print(result_list)
                 for i, value in enumerate(result_list):
                     self.new_matrix[r, target_column[0] + i] = value
 
     def make_dp_df(self):
         for r, c in enumerate(self.position):
-            print(r, c)
             self.calculate_each_row(r, c)
         
     def make_unnorm_dp_df(self):
