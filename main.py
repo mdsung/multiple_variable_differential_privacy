@@ -25,7 +25,7 @@ def get_arguments():
     return epsilon, filename, categorical_list
 
 def read_file(filename, id = False):
-    return pd.read_csv(filename).iloc[:100,:]
+    return pd.read_csv(filename)
 
 def create_folder(directory):
     if not os.path.exists(directory):
