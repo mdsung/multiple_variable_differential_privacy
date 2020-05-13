@@ -17,12 +17,15 @@ def get_arguments():
                     help='Epsilon for DP',
                     default = 10)
     
+    parser.add_argument('--categorical', '-c', type=str, nargs='+',
+                    help='categorical variable in csv file')
+
     args = parser.parse_args()
-    epsilon, filename = args.epsilon, args.file
-    return epsilon, filename
+    epsilon, filename,  categorical_list = args.epsilon, args.file,args. categorical
+    return epsilon, filename, categorical_list
 
 def read_file(filename, id = False):
-    return pd.read_csv(filename)
+    return pd.read_csv(filename).iloc[:100,:]
 
 def create_folder(directory):
     if not os.path.exists(directory):
@@ -49,10 +52,15 @@ if __name__ == "__main__":
     
     start = timeit.default_timer()
     
-    epsilon, filename = get_arguments()
+    epsilon, filename, categorical_list = get_arguments()
     method = "PM"
 
-    raw_data = read_file(filename, False) ## matrix 반환
+    raw_data = read_file(filename, False)
+    
+    # raw_data[categorical_list] = raw_data[categorical_list].apply(pd.Categorical)
+    if categorical_list:
+        raw_data[categorical_list] = raw_data[categorical_list].apply(pd.Categorical)
+    
     ## Apply Differential Privacy
     dp = diffPrivacy(epsilon, raw_data, method) ## epsilon, matrix, method
     # Output file save

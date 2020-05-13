@@ -29,7 +29,8 @@ class diffPrivacy:
         self.min_max_scaler = MinMaxScaler()
         self.continuous_columns = self.df.describe().columns.to_list()
         self.categorical_columns = list(set(self.df.columns) - set(self.df.describe().columns))
-
+        print(self.continuous_columns)
+        print(self.categorical_columns)
         df_cat = self.categorical_to_onehot(self.df.filter(self.categorical_columns))
         self.df_cat_columns = df_cat.columns
 
