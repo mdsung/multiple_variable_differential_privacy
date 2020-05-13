@@ -25,20 +25,32 @@ class diffPrivacy:
                 lst.append(i)
         self.df = df.iloc[:,lst]
         
+    def concat_df(self, df_con, df_cat):
+        if self.continuous_columns and self.categorical_columns:
+            return pd.concat([df_con, df_cat], axis = 1) 
+        elif self.continuous_columns and (not (self.categorical_columns)):
+            return df_con
+        elif (not (self.continuous_columns)) and self.categorical_columns:
+            return df_cat
+
     def make_norm_df(self):
         self.min_max_scaler = MinMaxScaler()
         self.continuous_columns = self.df.describe().columns.to_list()
         self.categorical_columns = list(set(self.df.columns) - set(self.df.describe().columns))
         print(self.continuous_columns)
         print(self.categorical_columns)
-        df_cat = self.categorical_to_onehot(self.df.filter(self.categorical_columns))
-        self.df_cat_columns = df_cat.columns
+        if self.categorical_columns:
+            df_cat = self.categorical_to_onehot(self.df.filter(self.categorical_columns))
+            self.df_cat_columns = df_cat.columns
+        else:
+            df_cat = pd.DataFrame()
+            self.df_cat_columns = []
 
         df_con = self.df.filter(self.continuous_columns)
-        self.df = pd.concat([df_con, df_cat], axis = 1) 
+        self.df = self.concat_df(df_con, df_cat)
         
         df_con = self.continuous_to_normalization(self.df.filter(self.continuous_columns))
-        self.normdf = pd.concat([df_con, df_cat], axis = 1) 
+        self.normdf = self.concat_df(df_con, df_cat)        
 
     def get_map_df_to_normdf(self):
         self.map_df_to_normdf = {}         ## {0: [0], 1: [1], 2: [2], 3: [3], 4: [4, 5], 5: [6, 7], 6: [8], 7: [9, 10, 11, 12, 13, 14, 15, 16], 8: [17], 9: [18, 19]}
@@ -126,7 +138,7 @@ class diffPrivacy:
     def continuous_to_invert_normalization(self, df_con, df_cat):
         df_con = self.min_max_scaler.inverse_transform(df_con)
         df_con = pd.DataFrame(df_con, columns = self.continuous_columns)
-        self.new_unnorm_df = pd.concat([df_con, df_cat], axis = 1) 
+        self.new_unnorm_df = self.concat_df(df_con, df_cat)
         
     def categorical_to_onehot(self, df_cat):
         return pd.get_dummies(df_cat)
