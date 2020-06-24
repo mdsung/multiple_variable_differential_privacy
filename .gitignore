@@ -1,6 +1,7 @@
 /env
 /.vscode
 /outcome
+/__pycache__
 targetfile.csv
 .DS_Store
 *.ipynb
