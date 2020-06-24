@@ -3,3 +3,5 @@
 /outcome
 targetfile.csv
 .DS_Store
+*.ipynb
+*.html

@@ -34,7 +34,7 @@ class diffPrivacy:
             return df_cat
 
     def make_norm_df(self):
-        self.min_max_scaler = MinMaxScaler()
+        self.min_max_scaler = MinMaxScaler(feature_range=(-1,1))
         self.continuous_columns = self.df.describe().columns.to_list()
         self.categorical_columns = list(set(self.df.columns) - set(self.df.describe().columns))
         print(self.continuous_columns)
