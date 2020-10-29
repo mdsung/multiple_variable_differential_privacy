@@ -1,73 +1,62 @@
-import os
-import timeit
-import argparse
+from multiprocessing import Pool
 
-import pandas as pd 
+from tqdm import tqdm
+import config
+from utils import write_pkl_file
+from differential_privacy import DiffPrivacy
+from data import Original, Label, Data
+from validation import Validation
 
-from diffPrivacy import diffPrivacy
+def main():
+    # configurations
+    filename = config.DP_CONFIG["filename"]
+    filedir = config.DP_CONFIG["filedir"]
+    outputdir = config.DP_CONFIG["output_file_directory"]
+    categorical_columns = config.DP_CONFIG["categorical_columns"]
+    epsilon_list = config.DP_CONFIG["epsilon_list"]
+    label_filename = config.DP_CONFIG["label_filename"]
+    train_size = config.DP_CONFIG["train_size"]
+    epoch = config.DP_CONFIG["epoch"]
 
-def get_arguments():
-    parser = argparse.ArgumentParser(description='Argparse in DP_algorithms')
-    parser.add_argument('--file', '-f', 
-                    type=str, 
-                    required = True, 
-                    help='csv file for apply DP_algorithm')
+    original = Original(filedir, filename, categorical_columns)
+    label = Label(filedir, label_filename, original)
+
+    ## DP class 
+    diffprivacy = DiffPrivacy(
+        original,
+        outputdir
+    )
+
+    # multiprocessing DP
+    print("Get DP data...")
+    pool = Pool()
+    pool.map(diffprivacy.dp, epsilon_list)
+
+    # Validation
+    print("Start Get Metric...")
+    categorical_results = []
+    continuous_results = []
+    model_results = []
     
-    parser.add_argument('--epsilon', '-e', type=int, 
-                    help='Epsilon for DP',
-                    default = 10)
-    
-    parser.add_argument('--categorical', '-c', type=str, nargs='+',
-                    help='categorical variable in csv file')
+    for epsilon in tqdm([0, *epsilon_list]):
+        if epsilon == 0:
+            validation = Validation(epsilon, original, original, label, train_size, epoch)
+            validation.process()
+            model_results.extend(validation.model_result)
+            continue
 
-    args = parser.parse_args()
-    epsilon, filename,  categorical_list = args.epsilon, args.file,args. categorical
-    return epsilon, filename, categorical_list
+        dp = Data(epsilon, outputdir)
+        validation = Validation(epsilon, original, dp, label, train_size, epoch)
+        validation.process()
 
-def read_file(filename, id = False):
-    #return pd.read_csv(filename).iloc[:100,:]
-    return pd.read_csv(filename)
+        categorical_results.append(validation.category_result)
+        continuous_results.append(validation.continuous_result)      
+        print(validation.model_result)
+        model_results.extend(validation.model_result)
 
-def create_folder(directory):
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-
-def make_write_filename(read_filename, flag, epsilon):
-    point_idx = read_filename.index(".")
-    return f"{read_filename[:point_idx]}_{flag}_{epsilon}.csv"
-
-def write_file(df, filename):
-    df.to_csv(filename)
-
-def write_outcomes(filename, epsilon, dp):
-    output_path = "./outcome/"
-    create_folder(output_path)
-
-    write_filename = make_write_filename(filename, "norm", epsilon)
-    write_file(dp.new_df, output_path + write_filename)
-    
-    write_filename = make_write_filename(filename, "DP", epsilon)
-    write_file(dp.new_unnorm_df, output_path + write_filename)
+    write_pkl_file(categorical_results, outputdir, "categorical_results.pkl")
+    write_pkl_file(continuous_results, outputdir, "continuous_results.pkl")
+    write_pkl_file(model_results, outputdir, "model_results.pkl")
 
 if __name__ == "__main__":
-    
-    start = timeit.default_timer()
-    
-    epsilon, filename, categorical_list = get_arguments()
-    method = "PM"
-
-    raw_data = read_file(filename, False)
-    
-    # raw_data[categorical_list] = raw_data[categorical_list].apply(pd.Categorical)
-    if categorical_list:
-        raw_data[categorical_list] = raw_data[categorical_list].apply(pd.Categorical)
-    
-    ## Apply Differential Privacy
-    dp = diffPrivacy(epsilon, raw_data, method) ## epsilon, matrix, method
-    # Output file save
-    write_outcomes(filename, epsilon, dp)
-
-    # 실행 코드
-    stop = timeit.default_timer()
-
-    print(f"Total Time the algorithm spent:{stop - start}s")
+    main()
