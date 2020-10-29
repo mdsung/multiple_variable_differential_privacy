@@ -15,10 +15,15 @@
 * [Contact](#contact)
 
 
-
 <!-- ABOUT THE PROJECT -->
 ## About The Project
+This code generate the data which was applied Local Diffential Privacy(LDP).  
+We use bounded laplacian method, and discretize in the categorical values.   
+Used data was the subset of eICU APACHE score data.  
+After applying the LDP, we validate data in three steps: categorical values, continuous values, and model validation.  
+The model was predict the motality in ICU by APACHE score variables.   
 
+![img](./images/validation.png)
 
 ### Built With
 * [Python](https://www.python.org)
