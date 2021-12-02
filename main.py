@@ -29,34 +29,34 @@ def main():
 
     # multiprocessing DP
     print("Get DP data...")
-    pool = Pool()
-    pool.map(diffprivacy.dp, epsilon_list)
-
-    # Validation
-    print("Start Get Metric...")
-    categorical_results = []
-    continuous_results = []
-    model_results = []
+    # pool = Pool()
+    # pool.map(diffprivacy.dp, epsilon_list)
+    diffprivacy.dp(epsilon_list[0])
     
-    for epsilon in tqdm([0, *epsilon_list]):
-        if epsilon == 0:
-            validation = Validation(epsilon, original, original, label, train_size, epoch)
-            validation.process()
-            model_results.extend(validation.model_result)
-            continue
+    # Validation
+    # print("Start Get Metric...")
+    # categorical_results = []
+    # continuous_results = []
+    # model_results = []
+    
+    # for epsilon in tqdm([0, *epsilon_list]):
+    #     if epsilon == 0:
+    #         validation = Validation(epsilon, original, original, label, train_size, epoch)
+    #         validation.process()
+    #         model_results.extend(validation.model_result)
+    #         continue
 
-        dp = Data(epsilon, outputdir)
-        validation = Validation(epsilon, original, dp, label, train_size, epoch)
-        validation.process()
+    #     dp = Data(epsilon, outputdir)
+    #     validation = Validation(epsilon, original, dp, label, train_size, epoch)
+    #     validation.process()
 
-        categorical_results.append(validation.category_result)
-        continuous_results.append(validation.continuous_result)      
-        print(validation.model_result)
-        model_results.extend(validation.model_result)
+    #     categorical_results.append(validation.category_result)
+    #     continuous_results.append(validation.continuous_result)      
+    #     model_results.extend(validation.model_result)
 
-    write_pkl_file(categorical_results, outputdir, "categorical_results.pkl")
-    write_pkl_file(continuous_results, outputdir, "continuous_results.pkl")
-    write_pkl_file(model_results, outputdir, "model_results.pkl")
+    # write_pkl_file(categorical_results, outputdir, "categorical_results.pkl")
+    # write_pkl_file(continuous_results, outputdir, "continuous_results.pkl")
+    # write_pkl_file(model_results, outputdir, "model_results.pkl")
 
 if __name__ == "__main__":
     main()

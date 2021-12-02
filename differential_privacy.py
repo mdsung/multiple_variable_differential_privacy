@@ -1,12 +1,14 @@
-from multiprocessing import Pool
-
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 
 import config
 from data import Original
 from utils import read_csv_file, check_folder, mkdir_folder, write_pkl_file
-  
+
+from pathlib import Path
+PROJECT_PATH = Path(__file__).parents[0]
+METRIC_PATH = Path(PROJECT_PATH, 'metric')
+
 class DiffPrivacy:
     def __init__(self, 
                 original,
@@ -19,6 +21,7 @@ class DiffPrivacy:
 
         self.output_folder = output_folder
     
+    # @profile
     def get_diffrential_privacy_value(self, value: float, epsilon: float) -> float:
         """
         get differential privacy value
@@ -60,7 +63,7 @@ class DiffPrivacy:
         Z = np.where(binom(p), z1, z2)
         
         return Z
-    
+
     def normalize(self, data: np.ndarray) -> np.ndarray:
         """
         min max normalization
@@ -109,18 +112,32 @@ def main():
     filename = config.DP_CONFIG["filename"]
     filedir = config.DP_CONFIG["filedir"]
     outputdir = config.DP_CONFIG["output_file_directory"]
-    categorical_columns = config.DP_CONFIG["categorical_columns"]
+    categorical_columns = config.DP_CONFIG["categorical_columns"] 
     epsilon_list = config.DP_CONFIG["epsilon_list"]
-
-    original = Original(filedir, filename, categorical_columns)
-    diffprivacy = DiffPrivacy(
-        original,
-        outputdir,
-    )
-
-    # multiprocessing
-    pool = Pool()
-    pool.map(diffprivacy.dp, epsilon_list)
-
+    
+    import time
+    from tqdm import tqdm
+    import pandas as pd
+    for count in tqdm([10, 100, 1000, 10000, 0]):
+        epsilon_times = []
+    
+        original = Original(filedir, filename, categorical_columns, count) 
+        diffprivacy = DiffPrivacy(
+            original,
+            outputdir,
+        )
+        
+        for _ in tqdm(range(10)):
+            epsilon_time = dict()
+            for idx, epsilon in tqdm(enumerate(epsilon_list)):
+                start = time.time()
+                diffprivacy.dp(epsilon)
+                elapse_time = time.time() - start
+                epsilon_time[str(epsilon)] = elapse_time
+                print(f"count={count}; epsilon={epsilon}; elapse_time={elapse_time};")
+            epsilon_times.append(epsilon_time)
+        
+        pd.DataFrame.from_records(epsilon_times).to_feather(Path(METRIC_PATH, f"epsilon_times_count{count}.feather"))
+        
 if __name__ == "__main__":
     main()
