@@ -12,14 +12,25 @@ preprocessed_data <- data %>%
 
 # data recode
 preprocessed_data <- preprocessed_data %>%
-    mutate(stage = recode(stage, '0' = 1))
+    mutate(stage = recode(stage, '0' = 1)) %>%
+    mutate(stage4 = ifelse(stage == 4, 1, 0), .after = 'stage') %>%
+    mutate(antipsychotics = ifelse(sum_P >= 7, 1, 0), .after = 'psymed') %>%
+    mutate(antidepressant = ifelse(sum_D >= 7, 1, 0), .after = 'psymed') %>%
+    mutate(anxiolytic = ifelse(sum_A >= 7, 1, 0), .after = 'psymed') 
+
+# fill na
+preprocessed_data <- preprocessed_data %>%
+    mutate(antipsychotics = replace_na(antipsychotics, 0)) %>%
+    mutate(antidepressant = replace_na(antidepressant, 0)) %>%
+    mutate(anxiolytic = replace_na(anxiolytic, 0)) 
 
 # data type
 preprocessed_data <- preprocessed_data %>% 
     mutate(sex = factor(sex)) %>%
-    mutate(stage4 = factor(ifelse(stage == 4, 1, 0))) %>%
-    mutate(stage = factor(stage)) 
-
-
+    mutate(stage = factor(stage)) %>%
+    mutate(stage4 = factor(stage4)) %>%
+    mutate(across(starts_with("anti"), factor)) %>%
+    mutate(anxiolytic = factor(anxiolytic)) 
+preprocessed_data
 # save file to feather
 arrow::write_feather(preprocessed_data, here('data/cc_data.feather'))

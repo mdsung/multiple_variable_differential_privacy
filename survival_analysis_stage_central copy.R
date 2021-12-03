@@ -9,6 +9,7 @@ data <- arrow::read_feather(here('data/cc_data.feather')) %>% select(-id, -stage
 # survival analysis
 model <- survfit(Surv(time, death) ~ stage4, data=data)
 model
+
 # ggplot
 figure <- ggsurvplot(
   model,
