@@ -6,6 +6,9 @@ import numpy as np
 def read_csv_file(filename):
     return pd.read_csv(filename)
 
+def read_feather_file(filename):
+    return pd.read_feather(filename)
+
 def read_pkl_file(fullfilepath):
     with open(fullfilepath, "rb") as f:
         return pickle.load(f)
@@ -21,5 +24,5 @@ def mkdir_folder(folder):
     os.mkdir(folder)
     
 def get_categorical_levels_from_data(data:np.ndarray, col: str) -> int:
-    sr = data.loc[:, col]
+    sr = data.loc[:, col].astype(int)
     return int(sr.max() - sr.min() + 1)

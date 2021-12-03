@@ -3,15 +3,20 @@ from typing import List
 
 import numpy as np
 
-from utils import read_csv_file, read_pkl_file, get_categorical_levels_from_data
+from utils import read_csv_file, read_feather_file, read_pkl_file, get_categorical_levels_from_data
 
 class Original:
     def __init__(self, filedir:str, filename:str, categorical_columns:List, count:int):
         full_file_name = os.path.join(filedir, filename)
+        if "csv" in full_file_name:
+            read_file = read_csv_file
+        elif 'feather' in full_file_name:
+            read_file = read_feather_file
+            
         if count == 0:
-            self.data = read_csv_file(full_file_name)
+            self.data = read_file(full_file_name)
         elif count > 0:
-            self.data = read_csv_file(full_file_name).iloc[:count]
+            self.data = read_file(full_file_name).iloc[:count]
         
         self.categorical_columns = categorical_columns
         self.continuous_columns = [d for d in self.data if d not in categorical_columns]
