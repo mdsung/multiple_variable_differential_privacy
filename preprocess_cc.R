@@ -13,6 +13,7 @@ preprocessed_data <- data %>%
 # data recode
 preprocessed_data <- preprocessed_data %>%
     mutate(stage = recode(stage, '0' = 1)) %>%
+    mutate(sex = recode(sex, 'M' = 1, "F" = 0)) %>%
     mutate(stage4 = ifelse(stage == 4, 1, 0), .after = 'stage') %>%
     mutate(antipsychotics = ifelse(sum_P >= 7, 1, 0), .after = 'psymed') %>%
     mutate(antidepressant = ifelse(sum_D >= 7, 1, 0), .after = 'psymed') %>%
