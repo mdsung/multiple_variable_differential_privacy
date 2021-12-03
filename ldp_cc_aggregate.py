@@ -11,8 +11,6 @@ OUTPUT_B_PATH = Path(PROJECT_PATH, 'output_cc/B')
 from utils import read_pkl_file
 
 # %%
-
-
 def create_dfs(path_:Path):
     immutable = read_pkl_file(list(path_.glob("*_immutable*"))[0])
     mutable = read_pkl_file(list(path_.glob("*_mutable*"))[0])
@@ -27,4 +25,11 @@ def create_dfs(path_:Path):
 
 a_dfs = create_dfs(path_ = OUTPUT_A_PATH)
 b_dfs = create_dfs(path_ = OUTPUT_B_PATH)
+# %%
+for epsilon in a_dfs.keys():
+    data_a = a_dfs[epsilon]
+    data_b = b_dfs[epsilon]
+    data = pd.merge(data_a, data_b, on = ['id', 'death', 'time'])
+    data.to_feather(Path(PROJECT_PATH, f'output_cc/cc_dp_{epsilon}.feather'))
+
 # %%
