@@ -1,4 +1,5 @@
 # %%
+import pickle
 import pandas as pd
 from data import Original
 from differential_privacy import * 
@@ -13,9 +14,21 @@ data_A = pd.read_feather(Path(DATA_PATH, 'cc_data_A.feather'))
 data_A_immutable = data_A[['id', 'death', 'time']]
 data_A_mutable = data_A.loc[:,'age':'antipsychotics']
 
+with open(Path(PROJECT_PATH, "output_cc/A", "data_A_immutable.pkl"), 'wb') as f:
+    pickle.dump(data_A_immutable, f)
+
+with open(Path(PROJECT_PATH, "output_cc/A", "data_A_mutable.pkl"), 'wb') as f:
+    pickle.dump(data_A_mutable, f)
+
 data_B = pd.read_feather(Path(DATA_PATH, 'cc_data_B.feather'))
 data_B_immutable = data_B[['id', 'death', 'time']]
 data_B_mutable = data_B[['stage4']]
+
+with open(Path(PROJECT_PATH, "output_cc/B", "data_B_immutable.pkl"), 'wb') as f:
+    pickle.dump(data_B_immutable, f)
+    
+with open(Path(PROJECT_PATH, "output_cc/B", "data_B_mutable.pkl"), 'wb') as f:
+    pickle.dump(data_B_mutable, f)
 
 # %% DP
 epsilon_list = [0.1, 0.5, 1, 10, 100, 1000, 10000]
