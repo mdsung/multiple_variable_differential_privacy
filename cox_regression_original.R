@@ -23,4 +23,4 @@ table_2 <- regression_table %>%
 result <- bind_cols(table_1, table_2) %>% 
     select(variable, coef, HR, p, lowerCI, upperCI)
 
-write_feather(result, here('data/beta_original.feather'))
+write_feather(result, here('output_cc/beta_original.feather'))

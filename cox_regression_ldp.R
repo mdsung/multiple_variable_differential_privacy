@@ -44,4 +44,4 @@ attempts = seq_along(1:50)
 epsilon_attempt_list <- expand.grid(epsilon = epsilon_list, attempt = attempts)
 result <- epsilon_attempt_list %>% furrr::future_map2_dfr(.x = .$epsilon, .y = .$attempt, .f = ~ create_regression_table_by_epsilon(.x, .y))
 
-saveRDS(result, here('output_cc/result.RDS'))
+write_feather(result, 'output_cc/beta_by_epsilon.feather')

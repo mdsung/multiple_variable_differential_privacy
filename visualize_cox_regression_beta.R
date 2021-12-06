@@ -2,10 +2,9 @@ library(tidyverse)
 library(arrow)
 library(here)
 
-original <- read_feather(here('data/beta_original.feather'))
-dp <- read_feather(here('data/beta_by_epsilon.feather'))
+original <- read_feather(here('output_cc/beta_original.feather'))
+dp <- read_feather(here('output_cc/beta_by_epsilon.feather'))
 
-dp %>% filter(variable == 'age')
 original <- original %>% 
     mutate(variable = dplyr::recode(variable, 
                             "sex1" = "sex",
