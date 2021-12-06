@@ -3,7 +3,7 @@ library(arrow)
 library(here)
 
 # read processed data
-data <- arrow::read_feather(here('data/cc_data.feather')) %>% select(-stage) 
+data <- arrow::read_feather(here('data/cc_data.feather')) 
 
 data_A <- data %>% select(id, age, sex, anxiolytic, antidepressant, antipsychotics, death, time) %>% na.omit()
 

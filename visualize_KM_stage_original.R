@@ -25,5 +25,5 @@ figure <- ggsurvplot(
   ggtheme = theme_bw()      # Change ggplot2 theme
 )
 
-ggsave(plot=print(figure), 
-    filename=here('images/survival_stage.pdf'))
+ggexport(figure, 
+    filename=here('images/survival_stage.png'))

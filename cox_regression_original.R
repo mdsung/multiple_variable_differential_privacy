@@ -25,7 +25,7 @@ result <- bind_cols(table_1, table_2) %>%
     mutate(variable = dplyr::recode(variable, 
                                 "sex1" = "sex",
                                 "stage41" = "stage4",
-                                "antipsychotics1" = "antipyschotics",
+                                "antipsychotics1" = "antipsychotics",
                                 "antidepressant1" = "antidepressant",
                                 "anxiolytic1" = 'anxiolytic'))
 

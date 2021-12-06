@@ -32,6 +32,9 @@ preprocessed_data <- preprocessed_data %>%
     mutate(stage4 = factor(stage4)) %>%
     mutate(across(starts_with("anti"), factor)) %>%
     mutate(anxiolytic = factor(anxiolytic)) 
-preprocessed_data
+
+# drop column
+preprocessed_data <- preprocessed_data %>% select(-stage) 
+
 # save file to feather
 arrow::write_feather(preprocessed_data, here('data/cc_data.feather'))
