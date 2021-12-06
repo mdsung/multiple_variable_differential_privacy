@@ -21,7 +21,6 @@ table_2 <- regression_table %>%
                   as_tibble() %>%
                   select(lowerCI = `lower .95`, upperCI = `upper .95` )
 result <- bind_cols(table_1, table_2) %>% 
-    mutate(epsilon = epsilon, .before='coef') %>%
-    select(variable, epsilon, coef, HR, p, lowerCI, upperCI)
+    select(variable, coef, HR, p, lowerCI, upperCI)
 
 write_feather(result, here('data/beta_original.feather'))
