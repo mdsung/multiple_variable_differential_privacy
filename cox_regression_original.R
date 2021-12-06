@@ -21,6 +21,13 @@ table_2 <- regression_table %>%
                   as_tibble() %>%
                   select(lowerCI = `lower .95`, upperCI = `upper .95` )
 result <- bind_cols(table_1, table_2) %>% 
-    select(variable, coef, HR, p, lowerCI, upperCI)
+    select(variable, coef, HR, p, lowerCI, upperCI) %>%
+    mutate(variable = dplyr::recode(variable, 
+                                "sex1" = "sex",
+                                "stage41" = "stage4",
+                                "antipsychotics1" = "antipyschotics",
+                                "antidepressant1" = "antidepressant",
+                                "anxiolytic1" = 'anxiolytic'))
+
 
 write_feather(result, here('output_cc/beta_original.feather'))
