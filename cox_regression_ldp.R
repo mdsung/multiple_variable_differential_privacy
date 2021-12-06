@@ -7,12 +7,11 @@ library(gtsummary)
 library(glue)
 library(furrr)
 
-future::plan("multicore", workers = 30)
-epsilon_list = c('0.1', '0.5', '1', '10', '100', '1000', '10000')
+future::plan('multicore', workers = 32)
 
 # read processed data
-create_regression_table_by_epsilon <- function(epsilon){
-  data <- arrow::read_feather(here(glue('output_cc/cc_dp_{epsilon}.feather'))) %>% 
+create_regression_table_by_epsilon <- function(epsilon, attempt){
+  data <- arrow::read_feather(here(glue('output_cc/{epsilon}_{attempt}.feather'))) %>% 
       select(-id) %>%
       mutate(across(c(-age, -time, -death), factor))
   regression_table <- summary(coxph(Surv(time, death) ~ age + sex + stage4 + antipsychotics + antidepressant + anxiolytic, data = data))
@@ -25,21 +24,24 @@ create_regression_table_by_epsilon <- function(epsilon){
                   .$conf.int %>% 
                   as_tibble() %>%
                   select(lowerCI = `lower .95`, upperCI = `upper .95` )
-  result <- bind_cols(table_1, table_2) %>% 
-    mutate(epsilon = epsilon, .before='coef') %>%
-    select(variable, epsilon, coef, HR, p, lowerCI, upperCI)
-    
+  result <- bind_cols(table_1, table_2) %>% tibble() %>%
+    mutate(epsilon = epsilon, attempt = attempt) %>%
+    select(attempt, epsilon, variable, coef, HR, p, lowerCI, upperCI) %>%
+    mutate(variable = dplyr::recode(variable, 
+                            "sex1" = "sex",
+                            "stage41" = "stage4",
+                            "antipsychotics1" = "antipyschotics",
+                            "antidepressant1" = "antidepressant",
+                            "anxiolytic1" = 'anxiolytic'))   
   return(result)
 }
 
-create_regression_table <- function(attempt){
-  result <- epsilon_list %>% map_df(create_regression_table_by_epsilon)
-  result <- result %>% dplyr::mutate(attemp = attempt, .before='variable')
-  return(result)
-}
+# create_regression_table_by_epsilon(epsilon, attempt)
 
-result_table <- seq_along(1:100) %>% 
-  furrr::future_map_dfr(create_regression_table)
+epsilon_list = c("0.1", "1", "10", "100", "1000", "10000")
+attempts = seq_along(1:50)
 
-write_feather(result_table, here('data/beta_by_epsilon.feather'))
+epsilon_attempt_list <- expand.grid(epsilon = epsilon_list, attempt = attempts)
+result <- epsilon_attempt_list %>% furrr::future_map2_dfr(.x = .$epsilon, .y = .$attempt, .f = ~ create_regression_table_by_epsilon(.x, .y))
 
+saveRDS(result, here('output_cc/result.RDS'))

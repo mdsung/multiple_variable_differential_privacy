@@ -104,8 +104,9 @@ class DiffPrivacy:
         # UNNORMALIZE
         data = self.unnormalize(data)
         
-        # SAVE
-        self.save_data_to_pickle(data, epsilon)
+        self.final_data = data
+        # # SAVE
+        # self.save_data_to_pickle(data, epsilon)
 
 def main():
     # configurations
